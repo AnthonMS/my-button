@@ -100,7 +100,7 @@ export class MyButtonLight extends LitElement {
 	// https://lit-element.polymer-project.org/guide/templates
 	protected render(): TemplateResult | void {
 		// var minBar = this.config.minBar ? this.config.minBar : 0;
-		console.log("Test-Card Config:", this.config)
+		// console.log("Test-Card Config:", this.config)
 
 		// -- Make copy of the config, this way we can add empty -- //
 		// -- objects and save ourselves a lot of if statements -- //
@@ -111,7 +111,7 @@ export class MyButtonLight extends LitElement {
 		const entityId = this.config.entity
 		const entityName = this.config.entity?.split(".")[1]
 		const entity = this.hass.states[`${entityId}`]
-		console.log("ENTITY:::", entity)
+		// console.log("ENTITY:::", entity)
 		
 		// -- Check if styles for different options exists -- //
 		conf.row1 = conf.row1 ? conf.row1 : {}
@@ -166,7 +166,7 @@ export class MyButtonLight extends LitElement {
 		// }
 		let sliderHeight = conf.styles.slider.height ? conf.styles.slider.height : "40px"
 		let sliderBackgroundColor = conf.styles.slider.backgroundColor ? conf.styles.slider.backgroundColor : "transparent"
-		let sliderProgressColor = conf.styles.slider.progressColor ? conf.styles.slider.progressColor : "green"
+		let sliderProgressColor = conf.styles.slider.progressColor ? conf.styles.slider.progressColor : iconColor
 		let maxSet = conf.slider.maxSet ? conf.slider.maxSet : 100
 		let minSet = conf.slider.minSet ? conf.slider.minSet : 0
 		let maxBar = conf.slider.maxBar ? conf.slider.maxBar : 100
@@ -180,12 +180,14 @@ export class MyButtonLight extends LitElement {
 		let row1Color = conf.styles.text.row1.color ? conf.styles.text.row1.color : "black"
 		let row1OneLine = conf.styles.text.row1.oneLine ? conf.styles.text.row1.oneLine : true
 		let row1Size = conf.styles.text.row1.size ? conf.styles.text.row1.size : "15px"
+		let row1Margin = conf.styles.text.row1.margin ? conf.styles.text.row1.margin : "0 0 10px 12px"
 
 		let row2Text = conf.row2.text ? conf.row2.text : ""
 		let row2TextOff = conf.row2.textOff ? conf.row2.textOff : ""
 		let row2Color = conf.styles.text.row2.color ? conf.styles.text.row2.color : "black"
 		let row2OneLine = conf.styles.text.row2.oneLine ? conf.styles.text.row2.oneLine : true
 		let row2Size = conf.styles.text.row2.size ? conf.styles.text.row2.size : "13px"
+		let row2Margin = conf.styles.text.row2.margin ? conf.styles.text.row2.margin : "0 0 5px 14px"
 
 		
 		// let row3Text = conf.row3.text ? conf.row3.text : entity.state === 'off' ? "0%" : Math.round(entity.attributes.brightness/2.55)+"%"
@@ -194,6 +196,7 @@ export class MyButtonLight extends LitElement {
 		let row3Color = conf.styles.text.row3.color ? conf.styles.text.row3.color : "black"
 		let row3OneLine = conf.styles.text.row3.oneLine ? conf.styles.text.row3.oneLine : true
 		let row3Size = conf.styles.text.row3.size ? conf.styles.text.row3.size : "13px"
+		let row3Margin = conf.styles.text.row3.margin ? conf.styles.text.row3.margin : "0 0 25px 14px"
 
 		if (row1Text === "<light_percentage>") {
 			if (row1TextOff === "") row1TextOff = "0%"
@@ -213,35 +216,27 @@ export class MyButtonLight extends LitElement {
 		}
 		// ------------------------ //
 
-		console.log("My-Button-Light -> ", this)
+		// console.log("My-Button-Light -> ", this)
 		// console.log("Slider ->", document.getElementById(`${entityName}-slider`))
 		// console.log("My-Button Width -> ", cardPxWidth)
 		// console.log("My-Button Height -> ", cardPxHeight)
 
-		// -- Calculate Left position for slider in right side
-		// let verticalRightLeftPos = (cardPxHeight/2) - (parseInt(sliderHeight)/2)
-
-
-
-		
-
-		// --slider-main-color: ${(entity.state === "off" || entity.state === "locked" || entity.state == undefined) ? cardBackgroundColorOff : cardBackgroundColor};
 		const haCardStyles = `
 			width: 100%;
 			height: 100%;
 			border-radius: ${cardBorderRadius};
-			background-color: ${entity.state === "off" ? cardBackgroundColorOff : cardBackgroundColor};
+			background-color: ${(entity.state === "off" || entity.state === "unavailable" || entity.state == undefined) ? cardBackgroundColorOff : cardBackgroundColor};
 			overflow: hidden;
 		`
 
 		const iconVariables = `
-			--icon-color: ${entity.state === "off" ? iconColorOff : iconColor}; 
+			--icon-color: ${(entity.state === "off" || entity.state === "unavailable" || entity.state == undefined) ? iconColorOff : iconColor}; 
 			--icon-size: ${iconSize};
 			--icon-position: ${iconPosition}; 
 			--icon-top: ${iconTop}; 
 			--icon-left: ${iconLeft};
 		`
-
+		
 
 		var styleVariables = `
 			--card-height: ${cardHeight};
@@ -255,7 +250,7 @@ export class MyButtonLight extends LitElement {
 			--slider-left-pos: ${(cardPxHeight/2) - (parseInt(sliderHeight)/2) + 2}px;
 			--slider-top-pos: ${(cardPxHeight/2) - (parseInt(sliderHeight)/2) + 2}px;
 			--slider-background-color: ${sliderBackgroundColor};
-			--slider-progress-color: ${(entity.state === "off" || entity.state === "locked" || entity.state == undefined) ? "transparent" : sliderProgressColor}
+			--slider-progress-color: ${(entity.state === "off" || entity.state === "unavailable" || entity.state == undefined) ? "transparent" : sliderProgressColor}
 
 	  	`;
 
@@ -269,6 +264,9 @@ export class MyButtonLight extends LitElement {
 			--row-2-line-height: ${parseInt(row2Size) + 2}px;
 			--row-3-size: ${row3Size};
 			--row-3-line-height: ${parseInt(row3Size) + 2}px;
+			--row-1-margin: ${row1Margin};
+			--row-2-margin: ${row2Margin};
+			--row-3-margin: ${row3Margin};
 		`;
 
 
@@ -328,7 +326,6 @@ export class MyButtonLight extends LitElement {
 
 		const sliderElement = () => {
 			let element = html``
-			console.log("Slider Config:::", slider)
 			if (slider || Object.keys(slider).length !== 0) {
 				element = html`
 					<input class="input-slider" id="${entityName}-slider" style="${sliderRightVariables}" orient="vertical" type="range" step="1" 
@@ -356,7 +353,6 @@ export class MyButtonLight extends LitElement {
 	}
 
 	private _handleAction(ev: ActionHandlerEvent): void {
-		console.log("Test 3")
 		if (this.hass && this.config && ev.detail.action) {
 			handleAction(this, this.hass, this.config, ev.detail.action);
 		}
@@ -369,15 +365,19 @@ export class MyButtonLight extends LitElement {
 		} else if (val < _minSet) {
 			val = _minSet;
 		}
-		console.log("Handle Slider Action Event!", _entity)
-		console.log("Target Value:::", val)
+		
+		this.hass.callService("light", "turn_on", {
+			entity_id: _entity.entity_id,
+			brightness: val * 2.55
+		})
+
 		_target.value = val
 		// this._setSliderValueTransition(_target, Math.round(_entity.attributes.brightness/2.55), val)
 
 	}
 
 	private _setSliderValueTransition(_target, _oldVal, _newVal): void {
-		console.log("Setting Slider with Transition", _target)
+		// console.log("Setting Slider with Transition", _target)
 		if (_newVal > _oldVal) {
 			var i = _oldVal
 			for (i; i < _newVal; i++) {
@@ -414,7 +414,6 @@ export class MyButtonLight extends LitElement {
 		}
 		.input-slider {
 			-webkit-appearance: none;
-			overflow: hidden;
 			background: var(--slider-background-color);
 			height: var(--slider-height);
 			width: var(--slider-width);
@@ -447,11 +446,52 @@ export class MyButtonLight extends LitElement {
 			width: 8px; /* 1 */
 			height: 40px;
 			background: var(--slider-progress-color);
-			box-shadow: -100vw 0 0 100vw var(--slider-progress-color);
-			border-top: 10px solid var(--slider-progress-color);
-			border-right: 7px solid var(--slider-progress-color);
-			border-bottom: 10px solid var(--slider-progress-color);
-			border-left: none;
+			box-shadow: 5px 0px 5px var(--slider-progress-color),
+						0px 0px 5px var(--slider-progress-color),
+						-5px 0px 5px var(--slider-progress-color),
+						-10px 0px 5px var(--slider-progress-color),
+						-15px 0px 5px var(--slider-progress-color),
+						-20px 0px 5px var(--slider-progress-color),
+						-25px 0px 5px var(--slider-progress-color),
+						-30px 0px 5px var(--slider-progress-color),
+						-35px 0px 5px var(--slider-progress-color),
+						-40px 0px 5px var(--slider-progress-color),
+						-45px 0px 5px var(--slider-progress-color),
+						-50px 0px 5px var(--slider-progress-color),
+						-55px 0px 5px var(--slider-progress-color),
+						-60px 0px 5px var(--slider-progress-color),
+						-65px 0px 5px var(--slider-progress-color),
+						-70px 0px 5px var(--slider-progress-color),
+						-75px 0px 5px var(--slider-progress-color),
+						-80px 0px 5px var(--slider-progress-color),
+						-85px 0px 5px var(--slider-progress-color),
+						-90px 0px 5px var(--slider-progress-color),
+						-95px 0px 5px var(--slider-progress-color),
+						-100px 0px 5px var(--slider-progress-color),
+						-105px 0px 5px var(--slider-progress-color),
+						-110px 0px 5px var(--slider-progress-color),
+						-115px 0px 5px var(--slider-progress-color),
+						-120px 0px 5px var(--slider-progress-color),
+						-125px 0px 5px var(--slider-progress-color),
+						-130px 0px 5px var(--slider-progress-color),
+						-135px 0px 5px var(--slider-progress-color),
+						-140px 0px 5px var(--slider-progress-color),
+						-145px 0px 5px var(--slider-progress-color),
+						-150px 0px 5px var(--slider-progress-color),
+						-155px 0px 5px var(--slider-progress-color),
+						-160px 0px 5px var(--slider-progress-color),
+						-165px 0px 5px var(--slider-progress-color),
+						-170px 0px 5px var(--slider-progress-color),
+						-175px 0px 5px var(--slider-progress-color),
+						-180px 0px 5px var(--slider-progress-color),
+						-185px 0px 5px var(--slider-progress-color),
+						-190px 0px 5px var(--slider-progress-color),
+						-195px 0px 5px var(--slider-progress-color),
+						-200px 0px 5px var(--slider-progress-color);
+			border-top: 5px solid transparent;
+			border-right: 5px solid transparent;
+			border-bottom: 5px solid transparent;
+			border-left: 5px solid transparent;
 			cursor: pointer;
 		}
 		
@@ -496,7 +536,7 @@ export class MyButtonLight extends LitElement {
 		}
 
 		.row-1 {
-			margin: 0 0 10px 7px;
+			margin: var(--row-1-margin);
             font-weight: bold;
 			font-size: var(--row-1-size);
 			line-height: var(--row-1-line-height);
@@ -505,14 +545,14 @@ export class MyButtonLight extends LitElement {
 			color: var(--row-1-color);
 		}
 		.row-2 {
-			margin: 0 0 5px 9px;
+			margin: var(--row-2-margin);
 			font-size: 13px;
 			line-height: var(--row-2-line-height);
 			height: var(--row-2-line-height);
 			color: var(--row-2-color);
 		}
 		.row-3 {
-			margin: 0 0 15px 9px;
+			margin: var(--row-3-margin);
 			font-size: 13px;
 			line-height: var(--row-3-line-height);
 			height: var(--row-3-line-height);
