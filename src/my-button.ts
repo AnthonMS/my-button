@@ -54,6 +54,14 @@ export class MyButton extends LitElement {
 		return {};
 	}
 
+	static get properties() {
+		return {
+			hass: {},
+			config: {},
+			active: {}
+		};
+	}
+
 	// hass: {},
 	// config: {},
 	// active: {}
@@ -73,6 +81,7 @@ export class MyButton extends LitElement {
 			throw new Error('You need to define an entity');
 		}
 
+
 		this.config = {
 			name: 'MyButton',
 			...config,
@@ -91,73 +100,152 @@ export class MyButton extends LitElement {
 	// https://lit-element.polymer-project.org/guide/templates
 	protected render(): TemplateResult | void {
 		// var minBar = this.config.minBar ? this.config.minBar : 0;
-		// console.log("Test-Card Config:", this.config)
+		console.log("Test-Card Config:", this.config)
 
-		let cardHeight = this.config.styles.card.height ? this.config.styles.card.height : "100%"
-		let cardWidth = this.config.styles.card.width ? this.config.styles.card.width : "100%"
+		// -- Make copy of the config, this way we can add empty -- //
+		// -- objects and save ourselves a lot of if statements -- //
+		var conf = JSON.parse(JSON.stringify(this.config));
+		// console.log("Test-Card Test:", conf)
+
+		
+		const entityId = this.config.entity
+		const entity = this.hass.states[`${entityId}`]
+		console.log("ENTITY:::", entity)
+		
+		// -- Check if styles for different options exists -- //
+		conf.styles = conf.styles ? conf.styles : {}
+		conf.styles.card = conf.styles.card ? conf.styles.card : {}
+		conf.styles.slider = conf.styles.slider ? conf.styles.slider : {}
+		conf.styles.text = conf.styles.text ? conf.styles.text : {}
+		conf.styles.text.row1 = conf.styles.text.row1 ? conf.styles.text.row1 : {}
+		conf.styles.text.row2 = conf.styles.text.row2 ? conf.styles.text.row2 : {}
+		conf.styles.text.row3 = conf.styles.text.row3 ? conf.styles.text.row3 : {}
+
+		// ---- Card Variables ---- //
+		let cardHeight = conf.styles.card.height ? conf.styles.card.height : "100%"
+		let cardWidth = conf.styles.card.width ? conf.styles.card.width : "100%"
 		this.style.height = cardHeight
 		this.style.width = cardWidth
 
+		let cardPxWidth = this.offsetWidth
+		let cardPxHeight = this.offsetHeight
+		window.addEventListener('resize', () => {
+			cardPxWidth = this.offsetWidth
+			cardPxHeight = this.offsetHeight
+		});
+
+
+		let cardBorderRadius = conf.styles.card.borderRadius ? conf.styles.card.borderRadius : "10%"
+		let cardBackgroundColor = conf.styles.card.backgroundColor ? conf.styles.card.backgroundColor : "rgba(255, 255, 255, 1)"
+		let cardBackgroundColorOff = conf.styles.card.backgroundColorOff ? conf.styles.card.backgroundColorOff : "rgba(230, 230, 230, 0.5)"
+		// ------------------------ //
+
+		// ---- Slider Variables ---- //
+		let sliderPosition = conf.styles.slider.position ? conf.styles.slider.position : "right"
+		if (sliderPosition === "right") {
+			console.log("DISPLAY THIS SLIDER ON THE RIGHT SIDE VERTICALLY!")
+		}
+		let sliderHeight = conf.styles.slider.height ? conf.styles.slider.height : "40px"
+		let sliderBackgroundColor = conf.styles.slider.backgroundColor ? conf.styles.slider.backgroundColor : "transparent"
+		let sliderProgressColor = conf.styles.slider.progressColor ? conf.styles.slider.progressColor : "green"
+
+		// ------------------------ //
+
+		// ---- Text Variables ---- //
+		let row1Color = conf.styles.text.row1.color ? conf.styles.text.row1.color : "black"
+		let row1OneLine = conf.styles.text.row1.oneLine ? conf.styles.text.row1.oneLine : true
+		let row1Size = conf.styles.text.row1.size ? conf.styles.text.row1.size : "15px"
+		let row2Color = conf.styles.text.row2.color ? conf.styles.text.row2.color : "black"
+		let row2OneLine = conf.styles.text.row2.oneLine ? conf.styles.text.row2.oneLine : true
+		let row2Size = conf.styles.text.row2.size ? conf.styles.text.row2.size : "13px"
+		let row3Color = conf.styles.text.row3.color ? conf.styles.text.row3.color : "black"
+		let row3OneLine = conf.styles.text.row3.oneLine ? conf.styles.text.row3.oneLine : true
+		let row3Size = conf.styles.text.row3.size ? conf.styles.text.row3.size : "13px"
+		// ------------------------ //
+
+		// console.log("My-Button -> ", this)
+		// console.log("My-Button Width -> ", cardPxWidth)
+		// console.log("My-Button Height -> ", cardPxHeight)
+
+		// -- Calculate Left position for slider in right side
+		// let verticalRightLeftPos = (cardPxHeight/2) - (parseInt(sliderHeight)/2)
+
+
+
+		
+
+		// --slider-main-color: ${(entity.state === "off" || entity.state === "locked" || entity.state == undefined) ? cardBackgroundColorOff : cardBackgroundColor};
 		const haCardStyles = `
 			width: 100%;
 			height: 100%;
+			border-radius: ${cardBorderRadius};
+			background-color: ${(entity.state === "off" || entity.state === "locked" || entity.state == undefined) ? cardBackgroundColorOff : cardBackgroundColor};
+			overflow: hidden;
 		`
-		let cardOffsetWidth = this.offsetWidth
-		let cardOffsetHeight = this.offsetHeight
 
-		console.log("My-Button -> ", this)
-		console.log("My-Button Width -> ", cardOffsetWidth)
-		console.log("My-Button Height -> ", cardOffsetHeight)
-
-		
-		const reportWindowSize = () => {
-			cardOffsetWidth = this.offsetWidth
-			cardOffsetHeight = this.offsetHeight
-		}
-		window.addEventListener('resize', reportWindowSize);
 
 		var styleVariables = `
-		  --card-height: ${cardHeight};
-		  --card-width: -${cardWidth};
+			--card-height: ${cardHeight};
+			--card-width: ${cardWidth};
+			--card-border-radius: ${cardBorderRadius};
+		`;
 
+		var sliderRightVariables = `
+			--slider-height: ${sliderHeight};
+			--slider-width: ${cardPxHeight + 10}px;
+			--slider-left-pos: ${(cardPxHeight/2) - (parseInt(sliderHeight)/2) + 2}px;
+			--slider-top-pos: ${(cardPxHeight/2) - (parseInt(sliderHeight)/2) + 2}px;
+			--slider-background-color: ${sliderBackgroundColor};
+			--slider-progress-color: ${(entity.state === "off" || entity.state === "locked" || entity.state == undefined) ? "transparent" : sliderProgressColor}
 
-		  --slider-height: 40px;
-		  --slider-width: ${cardOffsetWidth}px
+	  	`;
 
+		var textVariables = `
+			--row-1-color: ${row1Color};
+			--row-2-color: ${row2Color};
+			--row-3-color: ${row3Color};
+			--row-1-size: ${row1Size};
+			--row-1-line-height: ${parseInt(row1Size) + 2}px;
+			--row-2-size: ${row2Size};
+			--row-2-line-height: ${parseInt(row2Size) + 2}px;
+			--row-3-size: ${row3Size};
+			--row-3-line-height: ${parseInt(row3Size) + 2}px;
 		`;
 
 
-
+	//   @action=${this._handleAction}
+	//   .actionHandler=${actionHandler({
+	// 	  hasHold: hasAction(this.config.hold_action),
+	// 	  hasDoubleClick: hasAction(this.config.double_tap_action),
+	//   })}
 		return html`
-      <ha-card style="${haCardStyles}"
-        @action=${this._handleAction}
-        .actionHandler=${actionHandler({
-			hasHold: hasAction(this.config.hold_action),
-			hasDoubleClick: hasAction(this.config.double_tap_action),
-		})}>
+			<ha-card style="${haCardStyles}">
 
-        <div class="grid-area" style="${styleVariables}">
+				<div class="root-container" style="${styleVariables}">
+					<div class="grid-area"
+						@action=${this._handleAction}
+						.actionHandler=${actionHandler({
+							hasHold: hasAction(this.config.hold_action),
+							hasDoubleClick: hasAction(this.config.double_tap_action),
+						})}>
+						<div class="main-container">
+							<div class="info-container" style="${textVariables}">
+								<p class="row-3 ${row1OneLine ? "text-oneline" : "text"}">51%</p>
+								<p class="row-2 ${row2OneLine ? "text-oneline" : "text"}">Info 2</p>
+								<p class="row-1 ${row3OneLine ? "text-oneline" : "text"}">Kitchen Lights</p>
+								
+							</div>
+						</div>
+						<div class="right-container">
+							</div>
+						</div>
 
-            <div class="main-container">
-                <div class="img-container">
-                </div>
-                <div class="info-container">
-                    <p class="text row-3">57%</p>
-                    <p class="text row-2">Kitchen Lights</p>
-                    <p class="text row-1">Row 1</p>
-                </div>
-            </div>
 
-            <div class="right-container">
-				<div class="slider-container">
-					<input type="range" class="input-slider">
+					<input class="input-slider" orient="vertical" type="range" step="1" value=150" min="1" max="254" style="${sliderRightVariables}">
 				</div>
-            </div>
 
-        </div>
-
-      </ha-card>
-    `;
+			</ha-card>
+		`;
 	}
 
 	private _handleAction(ev: ActionHandlerEvent): void {
@@ -170,86 +258,72 @@ export class MyButton extends LitElement {
 
 	// https://lit-element.polymer-project.org/guide/styles
 	static get styles(): CSSResult {
+		// -webkit-transform: rotate(-90deg);
+		// -moz-transform: rotate(-90deg);
+		// -o-transform: rotate(-90deg);
+		// -ms-transform: rotate(-90deg);
+		// transform: rotate(-90deg);
+
+		// position: absolute;
+		// left: var(--slider-left-pos);
+		// top: var(--slider-top-pos);
 		const sliderCss = css`
 		/* vertical slider styling */
 		.slider-container {
 			padding: 0;
 			margin: 0;
-			position:absolute;
-			left: 49px;
-			top: 0px;
 		}
 		.input-slider {
 			-webkit-appearance: none;
-			position: relative;
 			overflow: hidden;
+			background: var(--slider-background-color);
 			height: var(--slider-height);
 			width: var(--slider-width);
-			cursor: pointer;
 			border-radius: 0;
 			border: none;
 			outline: none;
 			margin: 0;
 			padding: 0;
-			
+
 			-webkit-transform: rotate(-90deg);
 			-moz-transform: rotate(-90deg);
 			-o-transform: rotate(-90deg);
 			-ms-transform: rotate(-90deg);
 			transform: rotate(-90deg);
+
+
+			position: absolute;
+			left: var(--slider-left-pos);
+			top: var(--slider-top-pos);
+			
 		}
 		
 		.input-slider::-webkit-slider-runnable-track {
-			background: lightblue;
 		}
+
 		
 		
 		.input-slider::-webkit-slider-thumb {
 			-webkit-appearance: none;
 			width: 8px; /* 1 */
 			height: 40px;
-			background: #fff;
-			box-shadow: -100vw 0 0 100vw dodgerblue;
-			border-top: 10px solid dodgerblue;
-			border-right: 7px solid dodgerblue;
-			border-bottom: 10px solid dodgerblue;
+			background: var(--slider-progress-color);
+			box-shadow: -100vw 0 0 100vw var(--slider-progress-color);
+			border-top: 10px solid var(--slider-progress-color);
+			border-right: 7px solid var(--slider-progress-color);
+			border-bottom: 10px solid var(--slider-progress-color);
 			border-left: none;
+			cursor: pointer;
 		}
 		
-		.input-slider::-ms-fill-lower { 
-			background: dodgerblue;
-		}
-		
-		.input-slider::-ms-thumb { 
-			background: #fff;
-			border: 2px solid #999;
-			height: 40px;
-			width: 20px;
-			box-sizing: border-box;
-		}
-		
-		.input-slider::-ms-ticks-after { 
-			display: none; 
-		}
-		
-		.input-slider::-ms-ticks-before { 
-			display: none; 
-		}
-		
-		.input-slider::-ms-track { 
-			background: #ddd;
-			color: transparent;
-			height: 40px;
-			border: none;
-		}
-		
-		.input-slider::-ms-tooltip { 
-			display: none;
-		}
 		`
 
 		return css`
 		${sliderCss}
+		.root-container {
+			height: var(--card-height);
+			width: var(--card-width);
+		}
         .grid-area {
           height: 100%;
           display: grid;
@@ -259,42 +333,68 @@ export class MyButton extends LitElement {
         }
 
         .main-container { 
-            background-color: grey;
             position: relative;
         }
 
         .right-container { 
-            background-color: grey;
         }
 
         .img-container {
-            position:absolute;
+            position: absolute;
             top: 15%;
             left: 15%;
         }
 
-        .info-container {
+        .info-container-old {
             position:absolute;
             left: 10%;
             bottom: 10%;
-            right: 10%;
+            right: -15%;
             height: 50%;
             display: flex;
             flex-direction: column-reverse;
+			background: blue;
         }
-        .row-1 {
-            font-weight: bold;
-        }
-        .row-2 {
-        }
-        .row-3 {
-            font-size: 75%;
+        .info-container {
+			height: 100%;
+			width: 100%;
+            display: flex;
+            flex-direction: column-reverse;
         }
 
-        .text {
+
+        .text-oneline {
             padding: 0;
             margin: 0;
+			overflow: hidden;
+			white-space: nowrap;
         }
+		.text {
+            padding: 0;
+            margin: 0;
+		}
+
+		.row-1 {
+			margin: 0 0 10px 7px;
+            font-weight: bold;
+			font-size: var(--row-1-size);
+			line-height: var(--row-1-line-height);
+			color: var(--row-1-color);
+		}
+		.row-2 {
+			margin: 0 0 5px 9px;
+			font-size: 13px;
+			line-height: var(--row-2-line-height);
+			color: var(--row-2-color);
+		}
+		.row-3 {
+			margin: 0 0 15px 9px;
+			font-size: 13px;
+			line-height: var(--row-3-line-height);
+			color: var(--row-3-color);
+		}
+
+
     `;
 	}
 }
